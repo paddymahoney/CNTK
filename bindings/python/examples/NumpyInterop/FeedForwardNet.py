@@ -7,7 +7,7 @@
 import numpy as np
 import sys
 import os
-from cntk import learning_rates_per_sample, DeviceDescriptor, Trainer, sgd_learner, cntk_device, StreamConfiguration, text_format_minibatch_source
+from cntk import DeviceDescriptor, Trainer, sgd_learner, cntk_device, StreamConfiguration, text_format_minibatch_source
 from cntk.ops import input_variable, cross_entropy_with_softmax, combine, classification_error, sigmoid
 
 abs_path = os.path.dirname(os.path.abspath(__file__))
@@ -48,8 +48,7 @@ def ffnet(debug_output=True):
     pe = classification_error(netout, label)
 
     # Instantiate the trainer object to drive the model training
-    lr = learning_rates_per_sample(0.02)
-    trainer = Trainer(netout, ce, pe, [sgd_learner(netout.parameters(), lr)])
+    trainer = Trainer(netout, ce, pe, [sgd_learner(netout.parameters(), lr=0.02)])
 
     # Get minibatches of training data and perform model training
     minibatch_size = 25
@@ -78,8 +77,8 @@ def test_accuracy(device_id):
 
 if __name__=='__main__':
     # Specify the target device to be used for computing
-    target_device = DeviceDescriptor.gpu_device(0)
-    DeviceDescriptor.set_default_device(target_device)
+    #target_device = DeviceDescriptor.gpu_device(0)
+    #DeviceDescriptor.set_default_device(target_device)
 
     accuracy = ffnet()
     print("test: %f"%accuracy)

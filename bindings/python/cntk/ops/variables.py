@@ -19,17 +19,17 @@ def _sanitize_value(shape, value, dtype, device, is_param=False):
             ndav = NDArrayView.random_uniform_float(shape, -0.05, 0.05, 1, device)
         else:
             ndav = utils.create_NDArrayView(shape, cntk_dtype, device)
-
-
     else:
         if not isinstance(value, np.ndarray) or value.dtype!=np_dtype:
-            value = np.asarray(value, dtype=np_dtype)
+            if np.isscalar(value) and shape:
+                value = np.full(shape, value, dtype=np_dtype)
+            else:
+                value = np.asarray(value, dtype=np_dtype)
 
         ndav = utils.create_NDArrayView_from_NumPy(value, device)
 
     return ndav
 
-#TODO: remove default values from all constructors' arguments
 class Variable(TensorOpsMixin,Variable):
     def __init__(self, shape=None, data_type=None, needs_gradient=False, is_sparse=False,
                     dynamic_axes = [Axis.default_dynamic_axis(), Axis.default_batch_axis()], name=''):
@@ -54,24 +54,6 @@ class Parameter(TensorOpsMixin,Parameter):
         ndav = _sanitize_value(shape, value, data_type, device, True)
         super(Parameter, self).__init__(ndav, name)
 
-# TODO: make this part of the above constructor
-def parameter_from_scalar(value=None, data_type=None, 
-                            device=None, name=''):
-    if data_type is None:
-        if not isinstance(value, np.ndarray):
-            data_type = 'float32'
-        else:
-            data_type = str(value.dtype)
-
-    dtype = utils.sanitize_dtype_cntk(data_type)
-
-    if dtype == DataType_Float:
-        return ParameterFloat((), value, device, name)
-    elif dtype == DataType_Double:
-        return ParameterDouble((), value, device, name)
-    raise ValueError('unrecognized data_type: %s', dtype)
-
-# TODO: make this part of the above constructor
 class Constant(TensorOpsMixin,Constant):
     def __init__(self, shape=None, value=None, data_type=None, 
                     device=None, name=''):
@@ -85,18 +67,3 @@ class Constant(TensorOpsMixin,Constant):
         ndav = _sanitize_value(shape, value, data_type, device)
         super(Constant, self).__init__(ndav, name)
 
-def constant_from_scalar(value=None, data_type=None,
-                         device=None, name=''):
-    if data_type is None:
-        if not isinstance(value, np.ndarray):
-            data_type = 'float32'
-        else:
-            data_type = str(value.dtype)
-
-    dtype = utils.sanitize_dtype_cntk(data_type)
-    
-    if dtype == DataType_Float:
-        return ConstantFloat((), value, device, name)
-    elif dtype == DataType_Double:
-        return ConstantDouble((), value, device, name)
-    raise ValueError('unrecognized data_type: %s', dtype)

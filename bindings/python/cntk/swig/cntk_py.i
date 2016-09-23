@@ -36,6 +36,7 @@
 %ignore CNTK::Internal::Slice;
 
 %ignore CNTK::Internal::IsReversingTensorShapesInErrorMessagesEnabled;
+%ignore CNTK::Internal::IsSettingDefaultDeviceAlwaysAllowed;
 
 %ignore CNTK::Variable::Owner;
 
@@ -45,6 +46,14 @@
 %include "numpy.i"
 %init %{
     import_array();
+%}
+
+//
+// Whenever a tuple of dynamic axes is returned we need to reverse it
+//
+%feature("shadow") CNTK::Variable::DynamicAxes %{
+def dynamic_axes(self):
+    return tuple(reversed($action(self)))
 %}
 
 %apply (float* OUT_ARRAY1, int DIM1) {(float* py_data, int len)}
