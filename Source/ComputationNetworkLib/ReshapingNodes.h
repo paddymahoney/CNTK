@@ -449,6 +449,9 @@ public:
     void CopyTo(ComputationNodeBasePtr nodeP, const std::wstring& newName, const CopyNodeFlags flags) const override;
 
 private:
+    using ComputationNodeBase::GetInputs;
+    using TransformerNode<CropNode<ElemType>>::m_transforms;
+
     // Declaration of matrix getting method to unify accessing values and gradients.
     typedef MatrixBasePtr(ComputationNode<ElemType>::*MatrixGetter)() const;
 
@@ -476,13 +479,13 @@ private:
 
     virtual void /*ITransformerNode::*/ComputeTransforms() override;
 
-    virtual bool /*ITransformerNode::*/SupportsTransformOnInput(int inputIndex) override;
+    virtual bool /*ITransformerNode::*/SupportsTransformOnInput(size_t inputIndex) override;
 
 protected:
     // Offset along x axis. We need to store offsets as floats for precision if one crop node affects computation of other.
-    float m_xOffset;
+    double m_xOffset;
     // Offset along y axis.
-    float m_yOffset;
+    double m_yOffset;
     // Equivalence node names (equivalence node are sort of virtual common ancestors).
     std::wstring m_equivalenceNode1Name;
     std::wstring m_equivalenceNode2Name;
